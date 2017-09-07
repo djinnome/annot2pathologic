@@ -1,1 +1,1 @@
-# jgi2pathologic
+# annot2pathologic
