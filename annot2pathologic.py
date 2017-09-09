@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 from Bio import SeqIO
 import os
@@ -57,7 +58,7 @@ class PathologicEntry:
         out.append('//\n')
         return '\n'.join(out)
 
-class GFF2Pathologic:
+class GTF2Pathologic:
     def __init__(self, gtf_file, dbfn='genome.db', force=True, merge_strategy='create_unique', **kwargs ):
         self.db = gffutils.create_db(gtf_file, dbfn=dbfn, force=force, merge_strategy=merge_strategy, **kwargs)
     def getGenes( self ):
@@ -230,12 +231,12 @@ if __name__ == '__main__':
     ecdef = df_to_dol(pd.read_table(args.ec.name), 'proteinId', 'definition', 'ECdef')
 
     annot = pd.concat([ec, go, kog, ecdef, godef, kogdef], axis=1, join='outer')
-    g2p = GFFandAnnot2Pathologic(GTF2Pathologic(gff_file),JGIAnnot( annot  ))
+    g2p = GFFandAnnot2Pathologic(GTF2Pathologic(args.gff.name),JGIAnnot( annot  ))
     pe = g2p.get_entries('proteinId')
     pf_files = g2p.generate_pathologic_files(pe, {}, '{}.pf', args.outputdir)
     seq_files = dict([(ge,'{}.fna'.format(ge)) for ge in pf_files])
-    g2p.generate_genetic_elements_file(pf_files, seq_files, args.outputdir)
-    with open(args.seq,'r') as assembly:
+    g2p.generate_genetic_elements_file(pf_files, seq_files, {}, args.outputdir)
+    with open(args.seq.name,'r') as assembly:
         for record in SeqIO.parse(assembly, "fasta"):
             with open(os.path.join(args.outputdir,"{}.fna".format(record.id)), 'w') as out:
                 SeqIO.write([record], out, "fasta")
