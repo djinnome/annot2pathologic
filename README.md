@@ -41,7 +41,9 @@ optional arguments:
 
 * Assume you have downloaded the annotation and assembly of Rhizopus delemar  99-880
 * Assume you have initialized a Pathway/Genome database named rhizopuscyc using Pathologic. `Tools->Pathologic->Database->Create new`
-* Download the following files:
+* Download the following files from [JGI Mycocosm](http://genome.jgi.doe.gov/pages/dynamicOrganismDownload.jsf?organism=Rhior3)
+
+![JGI Mycocosm Rhior3](Rhior3.png "JGI Mycocosm Rhior3 Download")
 
 
 ```
