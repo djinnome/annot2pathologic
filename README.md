@@ -48,7 +48,7 @@ optional arguments:
    Mycocosm/Annotation/Filtered\ Models\ \(\"best\"\)/Functional\ Annotations/EC\ annotations\ and\ KEGG\ pathway\ mappings/*.tab \
    Mycocosm/Annotation/Filtered\ Models\ \(\"best\"\)/Functional\ Annotations/KOG/Rhoto_IFO0880_4_GeneCatalog_proteins_20170509_KOG.tab \
    Mycocosm/Annotation/Filtered\ Models\ \(\"best\"\)/Functional\ Annotations/GO/Rhoto_IFO0880_4_GeneCatalog_proteins_20170509_GO.tab \
-   Mycocosm/Assembly/Assembled_Scaffolds_Unmasked/Rhoto_IFO0880_4_AssemblyScaffolds.fasta
+   Mycocosm/Assembly/Assembled_Scaffolds_Unmasked/Rhoto_IFO0880_4_AssemblyScaffolds.fasta \
    ~/ptools-local/pgdbs/user/rhtocyc/1.0/input
 ```
 
