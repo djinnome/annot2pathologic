@@ -1,6 +1,6 @@
 # annot2pathologic
 
-## Pre-requisites
+## Prerequisites
 
 For this to work, you must install the following packages:
 
@@ -54,3 +54,9 @@ optional arguments:
 
 
 * You are now ready to go to Build->Specify Replicons
+
+
+## Future work
+* Generate an organism.dat file from the NCBI taxonomy that will allow you to run pathologic from the command-line, rather than invoking pathway-tools.
+* Require only pointing to the base directory of a Mycocosm download, and annot2pathologic.py will find all the appropriate annotation files automagically.
+* Require only pointing to the base URL of a Mycocosm download, and annot2pathologic.py will download the files it needs and convert them to pathologic file format automagically.
