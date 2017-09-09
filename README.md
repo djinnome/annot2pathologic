@@ -39,17 +39,17 @@ optional arguments:
 
 ## Example invocation
 
-* Assume you have downloaded the annotation and assembly of Rhodosporidium toruloides IFO0880_4 from JGI Mycocosm:
-* Assume you have initialized a Pathway/Genome database named rhtocyc using Pathologic. `Tools->Pathologic->Database->Create new`
+* Assume you have downloaded the annotation and assembly of Rhizopus delemar  99-880
+* Assume you have initialized a Pathway/Genome database named rhizopuscyc using Pathologic. `Tools->Pathologic->Database->Create new`
+* Download the following files:
+
 
 ```
 ~/annot2pathologic/annot2pathologic.py \
-   Mycocosm/Annotation/Filtered\ Models\ \(\"best\"\)/Genes/Rhoto_IFO0880_4_GeneCatalog_20170509.gff3 \
-   Mycocosm/Annotation/Filtered\ Models\ \(\"best\"\)/Functional\ Annotations/EC\ annotations\ and\ KEGG\ pathway\ mappings/*.tab \
-   Mycocosm/Annotation/Filtered\ Models\ \(\"best\"\)/Functional\ Annotations/KOG/Rhoto_IFO0880_4_GeneCatalog_proteins_20170509_KOG.tab \
-   Mycocosm/Annotation/Filtered\ Models\ \(\"best\"\)/Functional\ Annotations/GO/Rhoto_IFO0880_4_GeneCatalog_proteins_20170509_GO.tab \
-   Mycocosm/Assembly/Assembled_Scaffolds_Unmasked/Rhoto_IFO0880_4_AssemblyScaffolds.fasta \
-   ~/ptools-local/pgdbs/user/rhtocyc/1.0/input
+    Rhior3.filtered_proteins.BroadGene.gff3 \
+    Rhior3_proteins_KEGG.tab Rhior3_proteins_KOG.tab \
+    Rhior3_proteins_GO.tab Rhior3_scaffolds.fasta \
+    ~/ptools-local/pgdbs/user/rhopuscyc/1.0/input
 ```
 
 
