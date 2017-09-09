@@ -193,6 +193,7 @@ class GFFandAnnot2Pathologic:
 
 def df_to_dol( df, keycol, valuecol, newcol, sep='|'):
     dol = {}
+    df.columns = [c.strip('#') for c in df.columns]
     for i in df.index:
         key = df.loc[i,keycol]
         value = df.loc[i, valuecol]
