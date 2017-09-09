@@ -41,7 +41,7 @@ optional arguments:
 
 * Assume you have downloaded the annotation and assembly of Rhizopus delemar  99-880
 * Assume you have initialized a Pathway/Genome database named rhizopuscyc using Pathologic. `Tools->Pathologic->Database->Create new`
-* Download the following files from [JGI Mycocosm](http://genome.jgi.doe.gov/pages/dynamicOrganismDownload.jsf?organism=Rhior3)
+* Download the selected files from [JGI Mycocosm](http://genome.jgi.doe.gov/pages/dynamicOrganismDownload.jsf?organism=Rhior3)
 
 ![JGI Mycocosm Rhior3](Rhior3.png "JGI Mycocosm Rhior3 Download")
 
@@ -60,6 +60,5 @@ optional arguments:
 
 ## Future work
 * Generate an organism.dat file from the NCBI taxonomy that will allow you to run pathologic from the command-line, rather than invoking pathway-tools.
-* Require only pointing to the base directory of a Mycoco
-sm download, and annot2pathologic.py will find all the appropriate annotation files automagically.
+* Require only pointing to the base directory of a Mycocosm download, and annot2pathologic.py will find all the appropriate annotation files automagically.
 * Require only pointing to the base URL of a Mycocosm download, and annot2pathologic.py will download the files it needs and convert them to pathologic file format automagically.
