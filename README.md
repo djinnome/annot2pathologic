@@ -40,7 +40,7 @@ optional arguments:
 ## Example invocation
 
 * Assume you have downloaded the annotation and assembly of Rhodosporidium toruloides IFO0880_4 from JGI Mycocosm:
-* Assume you have initialized a Pathway/Genome database named rhtocyc using Pathologic. Tools->Pathologic->Database->Create new
+* Assume you have initialized a Pathway/Genome database named rhtocyc using Pathologic. `Tools->Pathologic->Database->Create new`
 
 ```
 ~/annot2pathologic/annot2pathologic.py \
@@ -53,10 +53,11 @@ optional arguments:
 ```
 
 
-* You are now ready to go to Build->Specify Replicons
+* You are now ready to go to `Build->Specify Replicons`
 
 
 ## Future work
 * Generate an organism.dat file from the NCBI taxonomy that will allow you to run pathologic from the command-line, rather than invoking pathway-tools.
-* Require only pointing to the base directory of a Mycocosm download, and annot2pathologic.py will find all the appropriate annotation files automagically.
+* Require only pointing to the base directory of a Mycoco
+sm download, and annot2pathologic.py will find all the appropriate annotation files automagically.
 * Require only pointing to the base URL of a Mycocosm download, and annot2pathologic.py will download the files it needs and convert them to pathologic file format automagically.
