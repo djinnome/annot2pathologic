@@ -13,6 +13,7 @@ conda install pandas numpy
 ## Installation
 
 ```
+cd ~/
 git clone https://github.com/djinnome/annot2pathologic.git
 ```
 
@@ -47,6 +48,9 @@ optional arguments:
 
 
 ```
+unzip ~/Downloads/Rhior3_download.zip
+cd Rhior3
+gunzip *.gz
 ~/annot2pathologic/annot2pathologic.py \
     Rhior3.filtered_proteins.BroadGene.gff3 \
     Rhior3_proteins_KEGG.tab Rhior3_proteins_KOG.tab \
