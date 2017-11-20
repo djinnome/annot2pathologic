@@ -72,7 +72,7 @@ class GFF2Pathologic:
         """This is actually only getting the non-cds part of the gene, not the introns"""
         introns = []
         cdss = []
-        for cds in self.db.children( gene, featuretype='cds', order_by='start'):
+        for cds in self.db.children( gene, featuretype='CDS', order_by='start'):
             cdss.append( cds )
         
         if len(cdss) > 0 and gene.start < cdss[0].start:
@@ -138,9 +138,10 @@ class JGIAnnot(Annot2Pathologic):
         return dblinks
 
 
-class GTF2Pathologic:
+class GTF2Pathologic(GFF2Pathologic):
     def __init__(self, gtf_file, dbfn='genome.db', force=True, merge_strategy='create_unique', **kwargs ):
-        self.db = gffutils.create_db(gtf_file, dbfn=dbfn, force=force, merge_strategy=merge_strategy, **kwargs)
+        GFF2Pathologic.__init__(self, gtf_file, dbfn, force, merge_strategy, **kwargs )
+
     def gene2entry( self, gene, geneKey  ):
         pe = {}
         functions=[]
@@ -195,21 +196,6 @@ class GTF2Pathologic:
 
     def getGenes( self ):
         return self.db.features_of_type( 'transcript', order_by='start')
-    def get_non_cds( self, gene ):
-        """This is actually only getting the non-cds part of the gene, not the introns"""
-        introns = []
-        cdss = []
-        for cds in self.db.children( gene, featuretype='cds', order_by='start'):
-            cdss.append( cds )
-        
-        if len(cdss) > 0 and gene.start < cdss[0].start:
-            introns.append((gene.start, cdss[0].start -1))
-        if len(cdss) > 1:
-            for i in range(len(cdss) -1):
-                introns.append((cdss[i].stop + 1, cdss[i+1].start - 1))
-        if len(cdss) > 0 and gene.stop > cdss[-1].stop:
-            introns.append((cdss[-1].stop + 1, gene.stop))
-        return ['{:d}-{:d}'.format(startbase, endbase) for startbase, endbase in introns]
     
     def get_introns_only_not_UTR( self, gene ):
         introns = []
