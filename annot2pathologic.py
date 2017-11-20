@@ -63,24 +63,27 @@ class GFF2Pathologic:
         self.db = gffutils.create_db(gtf_file, dbfn=dbfn, force=force, merge_strategy=merge_strategy, **kwargs)
     def getGenes( self ):
         return self.db.features_of_type( 'gene', order_by='start')
-    def get_non_cds( self, gene ):
-        introns = []
-        cdss = []
-        for cds in self.db.children( gene, featuretype='cds', order_by='start'):
-            cdss.append( cds )
-        if gene.start < cdss[0].start:
-            introns.append(gene.start, cdss[0].start -1)
-        if len(cdss) > 1:
-            for i in range(len(cdss) -1):
-                introns.append((cdss[i].stop + 1, cdss[i+1].start - 1))
-        if gene.stop > cdss[-1].stop:
-            introns.append(cdss[-1].stop + 1, gene.stop)
-        return ['{:d}-{:d}'.format(startbase, endbase) for startbase, endbase in introns]
     def getStartBase( self, gene ):
         if gene.strand == '+':
             return gene.start
         else:
             return gene.stop
+    def get_non_cds( self, gene ):
+        """This is actually only getting the non-cds part of the gene, not the introns"""
+        introns = []
+        cdss = []
+        for cds in self.db.children( gene, featuretype='cds', order_by='start'):
+            cdss.append( cds )
+        
+        if len(cdss) > 0 and gene.start < cdss[0].start:
+            introns.append((gene.start, cdss[0].start -1))
+        if len(cdss) > 1:
+            for i in range(len(cdss) -1):
+                introns.append((cdss[i].stop + 1, cdss[i+1].start - 1))
+        if len(cdss) > 0 and gene.stop > cdss[-1].stop:
+            introns.append((cdss[-1].stop + 1, gene.stop))
+        return ['{:d}-{:d}'.format(startbase, endbase) for startbase, endbase in introns]
+        
     def getEndBase( self, gene ):
         if gene.strand == '+':
             return gene.stop
