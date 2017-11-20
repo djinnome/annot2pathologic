@@ -198,13 +198,14 @@ class GTF2Pathologic:
         cdss = []
         for cds in self.db.children( gene, featuretype='cds', order_by='start'):
             cdss.append( cds )
-        if gene.start < cdss[0].start:
-            introns.append(gene.start, cdss[0].start -1)
+        
+        if len(cdss) > 0 and gene.start < cdss[0].start:
+            introns.append((gene.start, cdss[0].start -1))
         if len(cdss) > 1:
             for i in range(len(cdss) -1):
                 introns.append((cdss[i].stop + 1, cdss[i+1].start - 1))
-        if gene.stop > cdss[-1].stop:
-            introns.append(cdss[-1].stop + 1, gene.stop)
+        if len(cdss) > 0 and gene.stop > cdss[-1].stop:
+            introns.append((cdss[-1].stop + 1, gene.stop))
         return ['{:d}-{:d}'.format(startbase, endbase) for startbase, endbase in introns]
     
     def get_introns_only_not_UTR( self, gene ):
