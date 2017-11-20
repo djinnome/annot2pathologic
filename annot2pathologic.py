@@ -58,19 +58,23 @@ class PathologicEntry:
         out.append('//\n')
         return '\n'.join(out)
 
-class GTF2Pathologic:
+class GFF2Pathologic:
     def __init__(self, gtf_file, dbfn='genome.db', force=True, merge_strategy='create_unique', **kwargs ):
         self.db = gffutils.create_db(gtf_file, dbfn=dbfn, force=force, merge_strategy=merge_strategy, **kwargs)
     def getGenes( self ):
         return self.db.features_of_type( 'gene', order_by='start')
-    def get_introns( self, gene ):
+    def get_non_cds( self, gene ):
         introns = []
-        exons = []
-        for exon in self.db.children( gene, featuretype='exon', order_by='start'):
-            exons.append((exon.start, exon.stop))
-        if len(exons) > 1:
-            for i in range(len(exons) -1):
-                introns.append((exons[i][1] + 1, exons[i+1][0] - 1))
+        cdss = []
+        for cds in self.db.children( gene, featuretype='cds', order_by='start'):
+            cdss.append( cds )
+        if gene.start < cdss[0].start:
+            introns.append(gene.start, cdss[0].start -1)
+        if len(cdss) > 1:
+            for i in range(len(cdss) -1):
+                introns.append((cdss[i].stop + 1, cdss[i+1].start - 1))
+        if gene.stop > cdss[-1].stop:
+            introns.append(cdss[-1].stop + 1, gene.stop)
         return ['{:d}-{:d}'.format(startbase, endbase) for startbase, endbase in introns]
     def getStartBase( self, gene ):
         if gene.strand == '+':
@@ -129,7 +133,111 @@ class JGIAnnot(Annot2Pathologic):
             for go in self.getEntry( geneId, 'GO'):
                 dblinks.append( go )
         return dblinks
-        
+
+
+class GTF2Pathologic:
+    def __init__(self, gtf_file, dbfn='genome.db', force=True, merge_strategy='create_unique', **kwargs ):
+        self.db = gffutils.create_db(gtf_file, dbfn=dbfn, force=force, merge_strategy=merge_strategy, **kwargs)
+    def gene2entry( self, gene, geneKey  ):
+        pe = {}
+        functions=[]
+        pe['ID'] = self.getId( gene )
+        pe['genetic_element'] = self.getGeneticElement( gene )
+        pe['STARTBASE'] = self.getStartBase( gene )
+        pe['ENDBASE'] = self.getEndBase( gene )
+        pe['INTRON'] = self.get_non_cds( gene )                
+        pe['PRODUCT-TYPE'] = self.getProductType( gene )
+        pe['NAME'] = pe['ID']
+        pe['functions'] = self.getFunctions( gene )
+        return pe
+    def getProductType( self, gene ):
+        return 'P'
+
+    def get_entries( self, geneKey ):
+        pathologic_entries = {}
+        for gene in self.getGenes():
+            pe = self.gene2entry( gene, geneKey )
+            if pe['genetic_element'] in pathologic_entries:
+                pathologic_entries[pe['genetic_element']].append( pe )
+            else:
+                pathologic_entries[pe['genetic_element']] = [pe]
+        return pathologic_entries
+    def generate_pathologic_files( self, pathologic_entries, pathologic_files={},template_file='genetic_element_{}.pf' , outputdir='.'):
+        for genetic_element in pathologic_entries:
+            if genetic_element not in pathologic_files:
+                pathologic_files[genetic_element] = template_file.format(genetic_element )
+                with open(os.path.join(outputdir,pathologic_files[genetic_element]), 'w') as pf:
+                    for pe in sorted(pathologic_entries[genetic_element], key=operator.itemgetter('ID')):
+                        pf.write(str(PathologicEntry(**pe)))
+            else:
+                with open(os.path.join(outputdir,pathologic_files[pe['genetic_element']]),'a') as pf:
+                    for pe in sorted(pathologic_entries[genetic_element], key=operator.itemgetter('ID')):
+                        pf.write(str(PathologicEntry(**pe)))
+        return pathologic_files
+
+    def generate_genetic_elements_file( self, pathologic_files,seq_files={}, circular={},outputdir='.'):
+        with open(os.path.join(outputdir,'genetic-elements.dat'),'w') as out:
+            for genetic_element in sorted(pathologic_files):
+                out.write('ID\t{}\n'.format(genetic_element.replace('_','')))
+                out.write('NAME\t{}\n'.format( genetic_element))
+                out.write('TYPE\t{}\n'.format( ':CHRSM'))
+                if genetic_element in circular:
+                    out.write('CIRCULAR?\t{}\n'.format(circular[genetic_element]))
+                else:
+                    out.write('CIRCULAR\tN\n')
+                out.write('ANNOT-FILE\t{}\n'.format(pathologic_files[genetic_element]))
+                if genetic_element in seq_files:
+                    out.write('SEQ-FILE\t{}\n'.format(seq_files[genetic_element]))
+                out.write('//\n')
+
+    def getGenes( self ):
+        return self.db.features_of_type( 'transcript', order_by='start')
+    def get_non_cds( self, gene ):
+        """This is actually only getting the non-cds part of the gene, not the introns"""
+        introns = []
+        cdss = []
+        for cds in self.db.children( gene, featuretype='cds', order_by='start'):
+            cdss.append( cds )
+        if gene.start < cdss[0].start:
+            introns.append(gene.start, cdss[0].start -1)
+        if len(cdss) > 1:
+            for i in range(len(cdss) -1):
+                introns.append((cdss[i].stop + 1, cdss[i+1].start - 1))
+        if gene.stop > cdss[-1].stop:
+            introns.append(cdss[-1].stop + 1, gene.stop)
+        return ['{:d}-{:d}'.format(startbase, endbase) for startbase, endbase in introns]
+    
+    def get_introns_only_not_UTR( self, gene ):
+        introns = []
+        for intron in self.db.children( gene, featuretype='intron', order_by='start'):
+            introns.append('{:d}-{:d}'.format(intron.start, intron.stop))
+        return introns
+        #exons = []
+        #for exon in self.db.children( gene, featuretype='CDS', order_by='start'):
+        #    exons.append((exon.start, exon.stop))
+        #if len(exons) > 1:
+        #    for i in range(len(exons) -1):
+        #        introns.append((exons[i][1] + 1, exons[i+1][0] - 1))
+        #return ['{:d}-{:d}'.format(startbase, endbase) for startbase, endbase in introns]
+    def getStartBase( self, gene ):
+        if gene.strand == '+':
+            return gene.start
+        else:
+            return gene.stop
+    def getEndBase( self, gene ):
+        if gene.strand == '+':
+            return gene.stop
+        else:
+            return gene.start
+    def getId( self, gene ):
+        return gene['transcript_id'][0]
+
+    def getGeneticElement( self, gene ):
+        return gene.seqid
+    def getFunctions( self, geneId ):
+        return [dict(FUNCTION='ORF')]
+    
+    
 class GFFandAnnot2Pathologic:
     def __init__(self, gff, annot ):
         self.annot = annot
@@ -143,7 +251,7 @@ class GFFandAnnot2Pathologic:
         pe['genetic_element'] = self.gff.getGeneticElement( gene )
         pe['STARTBASE'] = self.gff.getStartBase( gene )
         pe['ENDBASE'] = self.gff.getEndBase( gene )
-        pe['INTRON'] = self.gff.get_introns( gene )                
+        pe['INTRON'] = self.gff.get_non_cds( gene )                
         pe['PRODUCT-TYPE'] = self.annot.getProductType( geneId )
         name = self.annot.getName( geneId )
         if name == geneId:
@@ -217,12 +325,13 @@ def writeable_dir(prospective_dir):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Convert annotations to Pathologic file format')
-    parser.add_argument('gff' , type=argparse.FileType('r'), help='input gff file name')
-    parser.add_argument('ec', type=argparse.FileType('r'), help='input EC number annotations file name')
-    parser.add_argument('kog', type=argparse.FileType('r'), help='input kog annotations file name')
-    parser.add_argument('go',type=argparse.FileType('r'), help='input go annotations file name')
-    parser.add_argument('seq', type=argparse.FileType('r'), help='input (unmasked) sequence file')
-    parser.add_argument('outputdir', type=writeable_dir, help='output directory')
+    parser.add_argument('--gff' , type=argparse.FileType('r'), help='input gff file name')
+    parser.add_argument('--gtf' , type=argparse.FileType('r'), help='input gtf file name')
+    parser.add_argument('--ec', type=argparse.FileType('r'), help='input EC number annotations file name')
+    parser.add_argument('--kog', type=argparse.FileType('r'), help='input kog annotations file name')
+    parser.add_argument('--go',type=argparse.FileType('r'), help='input go annotations file name')
+    parser.add_argument('--seq', type=argparse.FileType('r'), help='input (unmasked) sequence file')
+    parser.add_argument('--outputdir', type=writeable_dir, help='output directory')
     args = parser.parse_args()
     go = df_to_dol(pd.read_table(args.go.name), 'proteinId', 'goAcc', 'GO')
     godef = df_to_dol(pd.read_table(args.go.name), 'proteinId', 'goName', 'GOdef')
@@ -232,7 +341,10 @@ if __name__ == '__main__':
     ecdef = df_to_dol(pd.read_table(args.ec.name), 'proteinId', 'definition', 'ECdef')
 
     annot = pd.concat([ec, go, kog, ecdef, godef, kogdef], axis=1, join='outer')
-    g2p = GFFandAnnot2Pathologic(GTF2Pathologic(args.gff.name),JGIAnnot( annot  ))
+    if args.gff:
+        g2p = GFFandAnnot2Pathologic(GFF2Pathologic(args.gff.name),JGIAnnot( annot  ))
+    elif args.gtf:
+        g2p = GFFandAnnot2Pathologic(GTF2Pathologic(args.gff.name),JGIAnnot( annot  ))
     pe = g2p.get_entries('proteinId')
     pf_files = g2p.generate_pathologic_files(pe, {}, '{}.pf', args.outputdir)
     seq_files = dict([(ge,'{}.fna'.format(ge)) for ge in pf_files])
