@@ -34,9 +34,8 @@ optional arguments:
   --kog KOG             input kog annotations file name
   --go GO               input go annotations file name
   --seq SEQ             input (unmasked) sequence file
-  --mapfile MAPFILE     Map from GFF to Annotation IDs (default is protein_id)
-  --outputdir OUTPUTDIR
-                        output directory
+  --mapfile MAPFILE     map from GFF to Annotation IDs (default is protein_id)
+  --outputdir OUTPUTDIR output directory
 ```
 
 ## Example invocation
