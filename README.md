@@ -22,20 +22,21 @@ git clone https://github.com/djinnome/annot2pathologic.git
 
 ```
 annot2pathologic/annot2pathologic.py --help
-usage: annot2pathologic.py [-h] gff ec kog go seq outputdir
+usage: annot2pathologic.py [-h] [--gff GFF] [--gtf GTF] [--ec EC] [--kog KOG] [--go GO] [--seq SEQ] [--mapfile MAPFILE] [--outputdir OUTPUTDIR]
 
 Convert annotations to Pathologic file format
 
-positional arguments:
-  gff         input gff file name
-  ec          input EC number annotations file name
-  kog         input kog annotations file name
-  go          input go annotations file name
-  seq         input (unmasked) sequence file
-  outputdir   output directory
-
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  --gff GFF             input gff file name
+  --gtf GTF             input gtf file name
+  --ec EC               input EC number annotations file name
+  --kog KOG             input kog annotations file name
+  --go GO               input go annotations file name
+  --seq SEQ             input (unmasked) sequence file
+  --mapfile MAPFILE     Map from GFF to Annotation IDs (default is protein_id)
+  --outputdir OUTPUTDIR
+                        output directory
 ```
 
 ## Example invocation
@@ -52,10 +53,12 @@ unzip ~/Downloads/Rhior3_download.zip
 cd Rhior3
 gunzip *.gz
 ~/annot2pathologic/annot2pathologic.py \
-    Rhior3.filtered_proteins.BroadGene.gff3 \
-    Rhior3_proteins_KEGG.tab Rhior3_proteins_KOG.tab \
-    Rhior3_proteins_GO.tab Rhior3_scaffolds.fasta \
-    ~/ptools-local/pgdbs/user/rhopuscyc/1.0/input
+    --gff Rhior3.filtered_proteins.BroadGene.gff3 \
+    --ec Rhior3_proteins_KEGG.tab \
+    --kog Rhior3_proteins_KOG.tab \
+    --go Rhior3_proteins_GO.tab \
+    --seq Rhior3_scaffolds.fasta \
+    --outputdir ~/ptools-local/pgdbs/user/rhopuscyc/1.0/input
 ```
 
 
