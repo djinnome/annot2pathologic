@@ -277,7 +277,7 @@ class GFFandAnnot2Pathologic:
                 try:
                     annot_gene_id = int(gff2annot[self.gff.getId( gene )])
                 except KeyError:
-                    return 0
+                    annot_gene_id = 0
             else:
                 annot_gene_id = gff2annot( gene )
             pe = self.gene2entry( gene, annot_gene_id )
@@ -368,12 +368,12 @@ if __name__ == '__main__':
                                      JGIAnnot( annot  ))
 
     if args.mapfile:
-        print("Number of genes %d" % len(list(g2p.gff.getGenes())))
+        #print("Number of genes %d" % len(list(g2p.gff.getGenes())))
         pe = g2p.get_entries( gff_to_annot_map( args.mapfile.name ) )
 
     else:
         pe = g2p.get_entries('proteinId')
-    print("Number of entries: %d" % len(pe))
+    print("Number of entries: ", pe)
     pf_files = g2p.generate_pathologic_files(pe, {}, '{}.pf', args.outputdir)
     seq_files = dict([(ge,'{}.fna'.format(ge)) for ge in pf_files])
     g2p.generate_genetic_elements_file(pf_files, seq_files, {}, args.outputdir)
