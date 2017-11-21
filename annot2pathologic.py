@@ -233,29 +233,35 @@ class GFFandAnnot2Pathologic:
         self.annot = annot
         self.gff = gff
     
-    def gene2entry( self, gene, geneKey  ):
+    def gene2entry( self, gene, annot_gene_id  ):
         pe = {}
-        geneId = int(gene[geneKey][0])
+
         functions=[]
         pe['ID'] = self.gff.getId( gene )
         pe['genetic_element'] = self.gff.getGeneticElement( gene )
         pe['STARTBASE'] = self.gff.getStartBase( gene )
         pe['ENDBASE'] = self.gff.getEndBase( gene )
         pe['INTRON'] = self.gff.get_non_cds( gene )                
-        pe['PRODUCT-TYPE'] = self.annot.getProductType( geneId )
-        name = self.annot.getName( geneId )
-        if name == geneId:
+        pe['PRODUCT-TYPE'] = self.annot.getProductType( annot_gene_id )
+        name = self.annot.getName( annot_gen_id )
+        if name == annot_gene_id:
             pe['NAME'] = pe['ID']
         else:
             pe['NAME'] = name
-        pe['DBLINK']  = self.annot.getDBlinks( geneId )
-        pe['functions'] = self.annot.getFunctions( geneId )
+        pe['DBLINK']  = self.annot.getDBlinks( annot_gene_id )
+        pe['functions'] = self.annot.getFunctions( annot_gene_id )
         return pe
     
-    def get_entries( self, geneKey ):
+    def get_entries( self, gff2annot ):
         pathologic_entries = {}
         for gene in self.gff.getGenes():
-            pe = self.gene2entry( gene, geneKey )
+            if type( gff2annot ) is str:
+                annot_gene_id = int( gene[gff2annot][0] )
+            elif type( gff2annot ) is dict:
+                annot_gene_id = gff2annot[self.gff.getId( gene )]
+            else:
+                annot_gene_id = gff2annot( gene )
+            pe = self.gene2entry( gene, annot_gene_id )
             if pe['genetic_element'] in pathologic_entries:
                 pathologic_entries[pe['genetic_element']].append( pe )
             else:
@@ -301,6 +307,9 @@ def df_to_dol( df, keycol, valuecol, newcol, sep='|'):
             dol[key] = str(value)
     return pd.Series(dol).to_frame(newcol)
 
+def gff_to_annot_map( gff_to_annot_map_file ):
+    return pd.read_table( gff_to_annot_map_file ).to_dict()
+
 def writeable_dir(prospective_dir):
   if not os.path.isdir(prospective_dir):
        os.mkdir(prospective_dir)
@@ -321,6 +330,7 @@ if __name__ == '__main__':
     parser.add_argument('--kog', type=argparse.FileType('r'), help='input kog annotations file name')
     parser.add_argument('--go',type=argparse.FileType('r'), help='input go annotations file name')
     parser.add_argument('--seq', type=argparse.FileType('r'), help='input (unmasked) sequence file')
+    parser.add_argument('--mapfile', type=argparse.FileType('r'), help='Map from GFF to Annotation IDs')
     parser.add_argument('--outputdir', type=writeable_dir, help='output directory')
     args = parser.parse_args()
     go = df_to_dol(pd.read_table(args.go.name), 'proteinId', 'goAcc', 'GO')
@@ -335,7 +345,10 @@ if __name__ == '__main__':
         g2p = GFFandAnnot2Pathologic(GFF2Pathologic(args.gff.name),JGIAnnot( annot  ))
     elif args.gtf:
         g2p = GFFandAnnot2Pathologic(GTF2Pathologic(args.gff.name),JGIAnnot( annot  ))
-    pe = g2p.get_entries('proteinId')
+    if args.mapfile:
+        pe = g2p.get_entries( gff_to_annot_map( args.mapfile.name ) )
+    else:
+        pe = g2p.get_entries('proteinId')
     pf_files = g2p.generate_pathologic_files(pe, {}, '{}.pf', args.outputdir)
     seq_files = dict([(ge,'{}.fna'.format(ge)) for ge in pf_files])
     g2p.generate_genetic_elements_file(pf_files, seq_files, {}, args.outputdir)
