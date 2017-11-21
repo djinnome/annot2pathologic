@@ -114,7 +114,7 @@ class JGIAnnot(Annot2Pathologic):
     def getFunctions( self, geneId ):
         functions = []
         if geneId not in self.annot.index:
-            functions.append( dict(FUNCTION='ORF') )
+             functions.append( dict(FUNCTION='ORF') )
         elif self.notEmpty(geneId, 'EC') and self.notEmpty(geneId, 'ECdef'):
             for ec, ecdef in zip(self.getEntry(geneId, 'EC'), self.getEntry(geneId, 'ECdef')):
                 functions.append( dict(FUNCTION=ecdef, EC=ec))
@@ -259,7 +259,7 @@ class GFFandAnnot2Pathologic:
         pe['ENDBASE'] = self.gff.getEndBase( gene )
         pe['INTRON'] = self.gff.get_non_cds( gene )                
         pe['PRODUCT-TYPE'] = self.annot.getProductType( annot_gene_id )
-        name = self.annot.getName( annot_gen_id )
+        name = self.annot.getName( annot_gene_id )
         if name == annot_gene_id:
             pe['NAME'] = pe['ID']
         else:
@@ -277,6 +277,7 @@ class GFFandAnnot2Pathologic:
                 try:
                     annot_gene_id = int(gff2annot[self.gff.getId( gene )])
                 except KeyError:
+                    #print("%s not in gff2annot" % self.gff.getId( gene ) )
                     annot_gene_id = 0
             else:
                 annot_gene_id = gff2annot( gene )
@@ -327,7 +328,7 @@ def df_to_dol( df, keycol, valuecol, newcol, sep='|'):
     return pd.Series(dol).to_frame(newcol)
 
 def gff_to_annot_map( gff_to_annot_map_file ):
-    return pd.read_table( gff_to_annot_map_file ).to_dict()
+    return pd.read_table( gff_to_annot_map_file, index_col='PNNL')['Locus_JGI'].to_dict()
 
 def writeable_dir(prospective_dir):
   if not os.path.isdir(prospective_dir):
@@ -369,11 +370,13 @@ if __name__ == '__main__':
 
     if args.mapfile:
         #print("Number of genes %d" % len(list(g2p.gff.getGenes())))
-        pe = g2p.get_entries( gff_to_annot_map( args.mapfile.name ) )
+        gff2annot = gff_to_annot_map( args.mapfile.name )
+        #print(gff2annot)
+        pe = g2p.get_entries( gff2annot )
 
     else:
         pe = g2p.get_entries('proteinId')
-    print("Number of entries: ", pe)
+    #print("Number of entries: ", pe)
     pf_files = g2p.generate_pathologic_files(pe, {}, '{}.pf', args.outputdir)
     seq_files = dict([(ge,'{}.fna'.format(ge)) for ge in pf_files])
     g2p.generate_genetic_elements_file(pf_files, seq_files, {}, args.outputdir)
