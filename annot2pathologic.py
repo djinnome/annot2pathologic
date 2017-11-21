@@ -142,6 +142,22 @@ class GTF2Pathologic(GFF2Pathologic):
     def __init__(self, gtf_file, dbfn='genome.db', force=True, merge_strategy='create_unique', **kwargs ):
         GFF2Pathologic.__init__(self, gtf_file, dbfn, force, merge_strategy, **kwargs )
 
+    def get_non_cds( self, gene ):
+        """This is actually only getting the non-cds part of the gene, not the introns"""
+        introns = []
+        cdss = []
+        for cds in self.db.children( gene, featuretype='CDS', order_by='start'):
+            cdss.append( cds )
+        
+        if len(cdss) > 0 and gene.start < cdss[0].start:
+            introns.append((gene.start, cdss[0].start -1))
+        if len(cdss) > 1:
+            for i in range(len(cdss) -1):
+                introns.append((cdss[i].stop + 1, cdss[i+1].start - 1))
+        if len(cdss) > 0 and gene.stop > cdss[-1].stop:
+            introns.append((cdss[-1].stop + 1, gene.stop))
+        return ['{:d}-{:d}'.format(startbase, endbase) for startbase, endbase in introns]
+
     def gene2entry( self, gene, geneKey  ):
         pe = {}
         functions=[]
@@ -258,7 +274,10 @@ class GFFandAnnot2Pathologic:
             if type( gff2annot ) is str:
                 annot_gene_id = int( gene[gff2annot][0] )
             elif type( gff2annot ) is dict:
-                annot_gene_id = int(gff2annot[self.gff.getId( gene )])
+                try:
+                    annot_gene_id = int(gff2annot[self.gff.getId( gene )])
+                except KeyError:
+                    return 0
             else:
                 annot_gene_id = gff2annot( gene )
             pe = self.gene2entry( gene, annot_gene_id )
@@ -344,11 +363,17 @@ if __name__ == '__main__':
     if args.gff:
         g2p = GFFandAnnot2Pathologic(GFF2Pathologic(args.gff.name),JGIAnnot( annot  ))
     elif args.gtf:
-        g2p = GFFandAnnot2Pathologic(GTF2Pathologic(args.gtf.name),JGIAnnot( annot  ))
+        g2p = GFFandAnnot2Pathologic(GTF2Pathologic(args.gtf.name,gtf_subfeature='CDS', 
+                                                    id_spec={'gene': 'gene_id', 'transcript': 'transcript_id'}),
+                                     JGIAnnot( annot  ))
+
     if args.mapfile:
+        print("Number of genes %d" % len(list(g2p.gff.getGenes())))
         pe = g2p.get_entries( gff_to_annot_map( args.mapfile.name ) )
+
     else:
         pe = g2p.get_entries('proteinId')
+    print("Number of entries: %d" % len(pe))
     pf_files = g2p.generate_pathologic_files(pe, {}, '{}.pf', args.outputdir)
     seq_files = dict([(ge,'{}.fna'.format(ge)) for ge in pf_files])
     g2p.generate_genetic_elements_file(pf_files, seq_files, {}, args.outputdir)
