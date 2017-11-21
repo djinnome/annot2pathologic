@@ -258,7 +258,7 @@ class GFFandAnnot2Pathologic:
             if type( gff2annot ) is str:
                 annot_gene_id = int( gene[gff2annot][0] )
             elif type( gff2annot ) is dict:
-                annot_gene_id = gff2annot[self.gff.getId( gene )]
+                annot_gene_id = int(gff2annot[self.gff.getId( gene )])
             else:
                 annot_gene_id = gff2annot( gene )
             pe = self.gene2entry( gene, annot_gene_id )
@@ -344,7 +344,7 @@ if __name__ == '__main__':
     if args.gff:
         g2p = GFFandAnnot2Pathologic(GFF2Pathologic(args.gff.name),JGIAnnot( annot  ))
     elif args.gtf:
-        g2p = GFFandAnnot2Pathologic(GTF2Pathologic(args.gff.name),JGIAnnot( annot  ))
+        g2p = GFFandAnnot2Pathologic(GTF2Pathologic(args.gtf.name),JGIAnnot( annot  ))
     if args.mapfile:
         pe = g2p.get_entries( gff_to_annot_map( args.mapfile.name ) )
     else:
